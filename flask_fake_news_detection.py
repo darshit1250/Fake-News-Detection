@@ -56,31 +56,13 @@ pickle_aggresive.close()
 
 classifier_LSTM = load_model('fake_news_lstm.h5')
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-# cv = TfidfVectorizer(ngram_range=(1, 2), vocabulary=tfidf.vocabulary_)
-
 def corpus_to_tfidf(corpus):
   tfidf_vector = tfidf.transform(corpus)
-  # tfidf_vector = cv.transform(corpus)
   return tfidf_vector
 
 
-# corpus = make_corpus("Hi Am a","This is a fake news please identify it as a fake")
-# print(corpus)
-# tfidf_vector = corpus_to_tfidf(corpus)
-# print(tfidf_vector)
-# result = classifier.predict_proba(tfidf_vector)
-
-# print(result)
-
-# result[0][0]
-
 import tensorflow as tf
-# corpus = tokenizer_obj.texts_to_sequences(corpus)
-# embedded_doc = tf.keras.preprocessing.sequence.pad_sequences(corpus, maxlen=100)
-# print(embedded_doc)
-# classifier_LSTM.predict_classes(embedded_doc)
-
+from sklearn.feature_extraction.text import TfidfVectorizer
 from flask import Flask, request, jsonify, render_template
 import pickle
 import numpy as np
