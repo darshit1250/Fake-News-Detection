@@ -1,0 +1,82 @@
+<html lang="en" class="js-focus-visible" data-js-focus-visible="">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <title>Fake News Detection</title>
+  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Arimo' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Hind:300' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300' rel='stylesheet' type='text/css'>
+      <link rel="stylesheet" href="../static/css/main.css">
+      <script src="https://code.jquery.com/jquery-2.2.1.min.js" crossorigin="anonymous"></script> 
+   </head>
+   <body data-new-gr-c-s-check-loaded="14.1015.0" data-gr-ext-installed="" cz-shortcut-listen="true" style="">
+      <div class="backdrop"></div>
+      <header class="main-header">
+         <button id="side-menu-toggle">Menu</button> 
+         <nav class="main-header__nav">
+            <center style=" margin: auto 577px; color: white; "> Welcome to the Fake News Detection!</center>
+         </nav>
+      </header>
+      <main>
+         <div class="grid">
+            <article class="card product-item">
+               <header class="card__header">
+                  <h1 class="product__title">Check whether the news is fake or real!</h1>
+               </header>
+               <div class="card__content">
+                  <p class="product__description">Please add Title and the news content.</p>
+               </div>
+               <div class="card__actions">
+<!--                  <form action="/predict_file" id="classify" method="POST" enctype="multipart/form-data"> -->
+                <form action="{{ url_for('predict')}}" id="classify" method="POST" enctype="multipart/form-data"> 
+					Title : </br>
+					<input type="text" name="title" placeholder="Title" required="required" class=""></br>
+					News Content</br>
+					<textarea type="number" name="content" placeholder="News Content" required="required" class=""></textarea></br>
+					Select the algorithm</br>
+					<select name="algo">
+						<option value="naive_bayes">Naive Bayes</option>
+						<option value="logistic">Logistic Regression</option>
+						<option value="passive_agressive">Passive Agressive Classifier</option>
+						<option value="random_forest">Random Forest</option>
+						<option value="lstm">Long Sort Time Memory (LSTM)</option>
+						<option value="all">All</option>
+					</select>
+					<button class="btn" type="submit">Submit</button> 
+				</form>
+               </div>
+               <div class="card__content" id="result"> </div>
+            </article>
+         </div>
+      </main>
+	<script> 
+	$(document).ready(function() {
+    $("#classify").on("submit", function(e) {
+        e.preventDefault();
+        var fd = new FormData();
+        fd.append("title", $("input[name=title]").val());
+        fd.append("content", $("textarea[name=content]").val());
+        fd.append("algo", $("select[name=algo]").val());
+		
+        $.ajax({
+            url: "/predict",
+            contentType: false,
+            processData: false,
+            data: fd,
+            type: "POST",
+            success: function(data) {
+				console.log(data);
+				$("#result").html(data)
+					
+            },
+            error: function(XMLHttpRequest, textStatus) {
+                $("#result").html(`<p style="color: red" class="product__description">Some error</p>`);
+            }
+        })
+    })
+})
+	</script> 
+   </body>
+</html>
