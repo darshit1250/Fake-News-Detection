@@ -61,7 +61,7 @@ def corpus_to_tfidf(corpus):
   return tfidf_vector
 
 
-import tensorflow as tf
+from keras.preprocessing.sequence import pad_sequences
 from flask import Flask, request, render_template
 import pickle
 
@@ -80,7 +80,7 @@ def predict():
   corpus = make_corpus(title,text)
   tfidf_vector = corpus_to_tfidf(corpus)
   corpus_token = tokenizer_obj.texts_to_sequences(corpus)
-  embedded_doc = tf.keras.preprocessing.sequence.pad_sequences(corpus_token, maxlen=100)
+  embedded_doc = pad_sequences(corpus_token, maxlen=100)
   float_formatter = "{:.2f}".format
   if algo == 'naive_bayes':
     result_NB = classifier_NB.predict_proba(tfidf_vector)
