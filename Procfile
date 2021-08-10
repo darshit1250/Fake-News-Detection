@@ -1,1 +1,1 @@
-web: gunicorn flask_fake_news_detection:app
+web: gunicorn -w 6 flask_fake_news_detection:app
