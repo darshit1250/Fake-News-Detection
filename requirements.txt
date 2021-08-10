@@ -3,3 +3,4 @@ nltk==3.2.5
 pickleshare==0.7.5
 regex==2019.12.20
 gunicorn==20.0.2
+pip-tools==4.5.1
