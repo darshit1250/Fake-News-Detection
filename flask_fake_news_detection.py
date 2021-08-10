@@ -9,7 +9,7 @@ Original file is located at
 
 import nltk
 import re
-nltk.download(['punkt','stopwords','wordnet'])
+nltk.download(['punkt','stopwords'])
 
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -62,7 +62,7 @@ def corpus_to_tfidf(corpus):
 
 
 import tensorflow as tf
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, render_template
 import pickle
 
 
