@@ -29,14 +29,15 @@ def make_corpus(title, text):
   return corpus
 
 import pickle
-# from keras.models import load_model
-pickle_in = open('logistic.pkl','rb')
-classifier = pickle.load(pickle_in)
-pickle_in.close()
 
 pickle_tf = open('tfidf.pkl','rb')
 tfidf = pickle.load(pickle_tf)
 pickle_tf.close()
+
+
+pickle_in = open('logistic.pkl','rb')
+classifier = pickle.load(pickle_in)
+pickle_in.close()
 
 pickle_tokenizer = open('tokenizer.pkl', 'rb')
 tokenizer_obj = pickle.load(pickle_tokenizer)
