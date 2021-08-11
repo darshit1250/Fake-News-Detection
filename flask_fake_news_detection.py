@@ -29,15 +29,14 @@ def make_corpus(title, text):
   return corpus
 
 import pickle
+from keras.models import load_model
+pickle_in = open('logistic.pkl','rb')
+classifier = pickle.load(pickle_in)
+pickle_in.close()
 
 pickle_tf = open('tfidf.pkl','rb')
 tfidf = pickle.load(pickle_tf)
 pickle_tf.close()
-
-
-pickle_in = open('logistic.pkl','rb')
-classifier = pickle.load(pickle_in)
-pickle_in.close()
 
 pickle_tokenizer = open('tokenizer.pkl', 'rb')
 tokenizer_obj = pickle.load(pickle_tokenizer)
@@ -55,17 +54,16 @@ pickle_aggresive = open('passive_agressive_classifier.pkl', 'rb')
 classifier_PA = pickle.load(pickle_aggresive)
 pickle_aggresive.close()
 
-# classifier_LSTM = load_model('fake_news_lstm.h5')
+classifier_LSTM = load_model('fake_news_lstm.h5')
 
 def corpus_to_tfidf(corpus):
   tfidf_vector = tfidf.transform(corpus)
   return tfidf_vector
 
 
-# from keras.preprocessing.sequence import pad_sequences
-from flask import Flask, request, render_template
+import tensorflow as tf
+from flask import Flask, request,  render_template
 import pickle
-import numpy as np
 
 
 app = Flask(__name__)
@@ -79,22 +77,10 @@ def predict():
   title = request.form['title']
   text = request.form['content']
   algo = request.form['algo']
-  
   corpus = make_corpus(title,text)
   tfidf_vector = corpus_to_tfidf(corpus)
   corpus_token = tokenizer_obj.texts_to_sequences(corpus)
-  
-  #pad_sequence alternative
-  zeros = np.array([np.zeros(100)])
-  y_offset = 100-len(corpus_token[0])
-  zeros[:,y_offset:100] = corpus_token[0]
-  
-  print("corpus_token[0] : ",corpus_token[0])
-  print(len(corpus_token[0]))
-  print("zeros",zeros)
-  # embedded_doc = pad_sequences(corpus_token, maxlen=100)
-  embedded_doc = zeros
-  print(embedded_doc)
+  embedded_doc = tf.keras.preprocessing.sequence.pad_sequences(corpus_token, maxlen=100)
   float_formatter = "{:.2f}".format
   if algo == 'naive_bayes':
     result_NB = classifier_NB.predict_proba(tfidf_vector)
@@ -113,18 +99,17 @@ def predict():
   elif algo == 'random_forest':
     result_RF = classifier_RF.predict_proba(tfidf_vector)
     return "<h3>Using Random Forest : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter(result_RF[0][0]*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_RF[0][1]*100)) + "%"
-  # elif algo == 'lstm':
-  #   result_LSTM = classifier_LSTM.predict_proba(embedded_doc)
-  #   print(result_LSTM)
-  #   return "<h3>Using LSTM : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter((1 - result_LSTM[0][0])*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_LSTM[0][0]*100)) + "%" + "<p style='color:red;'>(Due to low computational power we've only used Title to train the LSTM! </br> Hence it might not give accurate result for whole News)</p>"
+  elif algo == 'lstm':
+    result_LSTM = classifier_LSTM.predict_proba(embedded_doc)
+    print(result_LSTM)
+    return "<h3>Using LSTM : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter((1 - result_LSTM[0][0])*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_LSTM[0][0]*100)) + "%" + "<p style='color:red;'>(Due to low computational power we've only used Title to train the LSTM! </br> Hence it might not give accurate result for whole News)</p>"
   else:
     result_NB = classifier_NB.predict_proba(tfidf_vector)
     result_LR = classifier.predict_proba(tfidf_vector)
     result_PA = classifier_PA.predict(tfidf_vector)
     result_RF = classifier_RF.predict_proba(tfidf_vector)
-    # result_LSTM = classifier_LSTM.predict_proba(embedded_doc)
-    result_str = "<h3>Using Naive Bayes : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter(result_NB[0][0]*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_NB[0][1]*100)) + "%</br><h3>Using Logistic Regression : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter(result_LR[0][0]*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_LR[0][1]*100)) + "%</br><h3>Using Passive Agressive Classifier</h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter((1-result_PA[0])*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_PA[0]*100)) +"%" + "</br><h3>Using Random Forest : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter(result_RF[0][0]*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_RF[0][1]*100)) 
-    # + "%</br><h3>Using LSTM : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter((1 - result_LSTM[0][0])*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_LSTM[0][0]*100)) + "%" + "<p style='color:red;'>(Due to low computational power we've only used Title to train the LSTM! </br> Hence it might not give accurate result for whole News)</p>"
+    result_LSTM = classifier_LSTM.predict_proba(embedded_doc)
+    result_str = "<h3>Using Naive Bayes : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter(result_NB[0][0]*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_NB[0][1]*100)) + "%</br><h3>Using Logistic Regression : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter(result_LR[0][0]*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_LR[0][1]*100)) + "%</br><h3>Using Passive Agressive Classifier</h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter((1-result_PA[0])*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_PA[0]*100)) +"%" + "</br><h3>Using Random Forest : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter(result_RF[0][0]*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_RF[0][1]*100)) + "%</br><h3>Using LSTM : </h3>" + "</br>The probability of the News being Reliable is : " + str(float_formatter((1 - result_LSTM[0][0])*100)) + "%</br>The probability of the News being Fake is : " + str(float_formatter(result_LSTM[0][0]*100)) + "%" + "<p style='color:red;'>(Due to low computational power we've only used Title to train the LSTM! </br> Hence it might not give accurate result for whole News)</p>"
     return result_str
 
 
